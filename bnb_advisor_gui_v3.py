@@ -4,10 +4,17 @@ import csv
 import json
 import os
 import time
-import tkinter as tk
+# tkinter non è disponibile su Streamlit Cloud: rendiamo il modulo importabile comunque
+try:
+    import tkinter as tk
+    from tkinter import ttk, messagebox
+except Exception:
+    import types
+    tk = types.SimpleNamespace(Tk=object)  # serve solo per class App(tk.Tk)
+    ttk = types.SimpleNamespace()
+    messagebox = types.SimpleNamespace()
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from tkinter import ttk, messagebox
 from typing import Optional, List, Tuple, Dict
 
 import requests
