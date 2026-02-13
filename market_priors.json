@@ -1,0 +1,14 @@
+{
+  "as_of": "2026-02-06",
+  "assumptions": {
+    "nightly_rate_is_for": "7_guests",
+    "guest_steps": "3-5:+15, 6-7:+10",
+    "delta_2p_to_7p": 65
+  },
+  "markets": [
+    { "name": "Olgiate Molgora", "occ": 0.47, "adr_7p": 164, "w": 1.0 },
+    { "name": "Merate",         "occ": 0.62, "adr_7p": 105, "w": 0.9 },
+    { "name": "Lecco Stazione",  "occ": 0.74, "adr_7p": 173, "w": 0.3 },
+    { "name": "Monza",          "occ": 0.76, "adr_7p": 138, "w": 0.2 }
+  ]
+}

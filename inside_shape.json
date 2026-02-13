@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-02-13T16:01:56.340932",
+  "source": "inside_airbnb_availability_proxy",
+  "filters": {
+    "room_type": "Entire home/apt",
+    "accommodates": [
+      6,
+      8
+    ],
+    "bedrooms": [
+      2,
+      3
+    ],
+    "weekend_days": [
+      "Fri",
+      "Sat"
+    ],
+    "elasticity": 0.7,
+    "weekend_uplift_mode": "default"
+  },
+  "combined": {
+    "weekend_uplift": 1.25,
+    "month_mult": {
+      "1": 0.7372410511041344,
+      "2": 0.8978370666555189,
+      "3": 0.8015660882659371,
+      "4": 1.0044156717841832,
+      "5": 1.0118588844964387,
+      "6": 1.0613460797994323,
+      "7": 1.242839466823893,
+      "8": 1.2442416837770476,
+      "9": 1.3177841479787422,
+      "10": 1.07148846193086,
+      "11": 0.7469030771208819,
+      "12": 0.7471538646175832
+    }
+  },
+  "debug": [
+    {
+      "listings": "milan_listings.csv.gz",
+      "calendar": "milan_calendar.csv.gz",
+      "n_listings_kept": 1714,
+      "n_calendar_rows_used": 625610,
+      "unavail_weekday": 0.4599467088703801,
+      "unavail_weekend": 0.49215173682793284
+    },
+    {
+      "listings": "bergamo_listings.csv.gz",
+      "calendar": "bergamo_calendar.csv.gz",
+      "n_listings_kept": 504,
+      "n_calendar_rows_used": 183960,
+      "unavail_weekday": 0.3625478927203065,
+      "unavail_weekend": 0.37784264346764346
+    }
+  ]
+}

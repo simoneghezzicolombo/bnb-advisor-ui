@@ -1,0 +1,33 @@
+=== RECOMMENDATIONS ===
+GO-LIVE: 2026-02-10
+Pacing calcolato da: 2026-02-13
+
+Occ 14 giorni: 0/14 = 0% (target 63%)
+Occ 30 giorni: 0/30 = 0% (target 58%)
+
+Benchmark locale (Airbtics) base 2p: ~76€
+Tu (Direct base 2p): 60€  => delta vs benchmark: -21%
+
+Direct base usato (2p feriale): 60€ (tu hai inserito: 60€)
+Motivo: Auto-adjust OFF + Launch floor 60€ → mantengo 60€.
+Launch mode: ON (floor 60€)
+
+File generati: matrix_monthly.csv, matrix_daily.csv, settings_recap.json
+
+CHECKLIST (cosa impostare):
+SITO (Direct)
+- Regola: Direct sempre -15% vs OTA effective
+- Usa matrix_daily.csv per applicare prezzi giorno-per-giorno (include weekend + peak weeks).
+
+AIRBNB
+- Smart Pricing: OFF
+- Bulk edit calendario: usa colonna 'airbnb_2p' (2 ospiti) e gli scatti extra guest
+- Weekly discount: 5%
+- Extra guests: 3–5: +15€/ospite | 6–7: +10€/ospite (2→7 = +65€)
+- Face -20%: ON (NO stacking)
+
+BOOKING
+- Availability planner: usa colonna 'booking_2p' (weekday/weekend/peak già inclusi)
+- Non-refundable: 5% più economico dello Standard
+- Weekly: 5% più economico dello Standard
+- Pricing per ospite: 3–5: +15€/ospite | 6–7: +10€/ospite (2→7 = +65€)

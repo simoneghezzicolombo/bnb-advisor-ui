@@ -1,0 +1,16 @@
+{
+  "csv_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTD0-p4QLYCfShcs8elKAz-AV3o8iX5Y8dMMj7QqUGWMXtrkp1fnUfdAL7DHfs_NiWveLdULMoE-kGj/pub?gid=859540155&single=true&output=csv",
+  "go_live": "2026-02-10",
+  "direct_base": 60.0,
+  "auto_adjust": false,
+  "launch_floor": 60.0,
+  "launch_days": 21,
+  "launch_bookings": 3,
+  "face20": true,
+  "airbnb_has20": true,
+  "booking_has20": true,
+  "airbnb_weekly_pct": 5.0,
+  "booking_nonref_pct": 5.0,
+  "booking_weekly_pct": 5.0,
+  "daily_horizon": 90
+}
