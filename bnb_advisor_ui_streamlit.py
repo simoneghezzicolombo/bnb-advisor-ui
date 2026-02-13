@@ -281,7 +281,7 @@ with st.sidebar:
     face20 = st.checkbox("Promo faccia -20% ON", value=True)
     airbnb_has20 = st.checkbox("Airbnb: -20% già attiva", value=True)
     booking_has20 = st.checkbox("Booking: -20% già attiva", value=True)
-    horizon = st.slider("Orizzonte prezzi (giorni)", 14, 365, 90)
+    horizon = st.slider("Orizzonte prezzi (giorni)", 14, 730,  365)
 
     st.divider()
     with st.expander("Avanzate (di solito non tocchi)"):
