@@ -7,6 +7,8 @@ import pandas as pd
 import streamlit as st
 import json
 
+CSV_URL_FIXED = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTD0-p4QLYCfShcs8elKAz-AV3o8iX5Y8dMMj7QqUGWMXtrkp1fnUfdAL7DHfs_NiWveLdULMoE-kGj/pub?gid=859540155&single=true&output=csv"
+
 # ---- Import backend: NON tocchiamo algoritmo, solo wrapper UI ----
 BACKEND = None
 IMPORT_ERRORS = []
@@ -268,7 +270,8 @@ st.title("BnB Advisor — UI super semplice (Airbnb / Booking / Sito)")
 
 with st.sidebar:
     st.subheader("Setup (minimo)")
-    csv_url = st.text_input("CSV URL (Google Sheet pubblicato)", value="")
+    csv_url = CSV_URL_FIXED
+    st.caption("CSV URL: fissato (hardcoded) ✅")
     go_live = st.text_input("Go-live (YYYY-MM-DD)", value=str(date.today()))
     direct_base = st.number_input("Direct base 2p feriale (€)", min_value=10, max_value=2000, value=80, step=1)
     auto_adjust = st.checkbox("Auto-adjust (pacing)", value=True)
