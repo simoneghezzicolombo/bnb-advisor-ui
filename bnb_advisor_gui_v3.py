@@ -111,76 +111,98 @@ def load_inside_shape_combined() -> Optional[dict]:
         return None
 
 def compute_shape_overrides() -> Tuple[float, Dict[int, float], str]:
+    """
+    Stagionalità gestita da peak_weeks.json (fixed_annual).
+    Qui teniamo solo weekend uplift.
+    """
     shape = load_inside_shape_combined()
-    if not shape:
-        return DEFAULT_WEEKEND_UPLIFT, dict(DEFAULT_MONTH_MULT), "default"
 
-    we = shape.get("weekend_uplift", None)
-    mm = shape.get("month_mult", None)
+    weekend_uplift = DEFAULT_WEEKEND_UPLIFT
+    src = "default"
 
-    valid_we = isinstance(we, (int, float)) and 1.01 <= float(we) <= 2.0
+    if shape:
+        we = shape.get("weekend_uplift", None)
+        if isinstance(we, (int, float)) and 1.01 <= float(we) <= 2.0:
+            weekend_uplift = float(we)
+            src = "inside_shape.json (weekend only)"
 
-    month_mult: Dict[int, float] = {}
-    non_flat = False
-    if isinstance(mm, dict) and len(mm) == 12:
-        for k, v in mm.items():
-            try:
-                m = int(k)
-                month_mult[m] = float(v)
-            except Exception:
-                pass
-        if len(month_mult) == 12:
-            non_flat = any(abs(month_mult[m] - 1.0) > 0.02 for m in range(1, 13))
-
-    if not valid_we or not non_flat:
-        return DEFAULT_WEEKEND_UPLIFT, dict(DEFAULT_MONTH_MULT), "fallback (inside_shape not informative)"
-
-    return float(we), month_mult, "inside_shape.json"
+    month_mult_flat = {m: 1.0 for m in range(1, 13)}
+    return weekend_uplift, month_mult_flat, src
 
 # -------- peak weeks
 def load_peak_weeks() -> dict:
     """
-    Format:
+    Nuovo formato ONLY:
     {
-      "rules":[{"label":"Summer","start":"2026-07-01","end":"2026-08-31","mult":1.15}],
-      "date_overrides":[{"date":"2026-12-31","mult":1.30,"label":"NYE"}]
+      "years_ahead": 2,
+      "fixed_annual":[{"name":"...", "start_md":"12-23", "end_md":"01-06", "mult":1.18}],
+      "one_off":[{"name":"...", "start":"2026-02-06", "end":"2026-02-22", "mult":1.10}]
     }
     """
     if not os.path.exists(PEAK_WEEKS_FILE):
-        return {"rules": [], "date_overrides": []}
-    try:
-        with open(PEAK_WEEKS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        data.setdefault("rules", [])
-        data.setdefault("date_overrides", [])
-        return data
-    except Exception:
-        return {"rules": [], "date_overrides": []}
+        return {"years_ahead": 2, "fixed_annual": [], "one_off": []}
+
+    with open(PEAK_WEEKS_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    data.setdefault("years_ahead", 2)
+    data.setdefault("fixed_annual", [])
+    data.setdefault("one_off", [])
+    return data
+
 
 def peak_multiplier_for_day(d: date, peaks: dict) -> Tuple[float, str]:
     best_mult = 1.0
     best_label = ""
-    # date overrides win
-    for o in peaks.get("date_overrides", []):
+
+    def parse_mm_dd(md: str) -> Optional[Tuple[int, int]]:
         try:
-            if parse_yyyy_mm_dd(o.get("date","")) == d:
-                m = float(o.get("mult", 1.0))
-                if m > best_mult:
-                    best_mult = m
-                    best_label = o.get("label","override")
+            mm, dd = (md or "").strip().split("-")
+            return int(mm), int(dd)
         except Exception:
-            continue
-    for r in peaks.get("rules", []):
+            return None
+
+    md = (d.month, d.day)
+
+    # 1) One-off (date reali): sempre validi
+    for ev in peaks.get("one_off", []) or []:
         try:
-            s = parse_yyyy_mm_dd(r.get("start",""))
-            e = parse_yyyy_mm_dd(r.get("end",""))
+            s = parse_yyyy_mm_dd(ev.get("start", ""))
+            e = parse_yyyy_mm_dd(ev.get("end", ""))
             if s <= d <= e:
-                m = float(r.get("mult", 1.0))
+                m = float(ev.get("mult", 1.0))
                 if m > best_mult:
                     best_mult = m
-                    best_label = r.get("label","peak")
+                    best_label = ev.get("name", "one_off")
         except Exception:
             continue
+
+    # 2) Annuali ricorrenti (MM-DD), limitati a years_ahead
+    years_ahead = int(peaks.get("years_ahead", 2) or 2)
+    limit_end = date.today() + timedelta(days=366 * years_ahead)
+
+    if d <= limit_end:
+        for ev in peaks.get("fixed_annual", []) or []:
+            try:
+                s_md = parse_mm_dd(ev.get("start_md", ""))
+                e_md = parse_mm_dd(ev.get("end_md", ""))
+                if not s_md or not e_md:
+                    continue
+
+                # range nello stesso anno o a cavallo (es. 12-23 -> 01-06)
+                if s_md <= e_md:
+                    in_range = (s_md <= md <= e_md)
+                else:
+                    in_range = (md >= s_md) or (md <= e_md)
+
+                if in_range:
+                    m = float(ev.get("mult", 1.0))
+                    if m > best_mult:
+                        best_mult = m
+                        best_label = ev.get("name", "fixed_annual")
+            except Exception:
+                continue
+
     return best_mult, best_label
 
 # -------- sheet schema
@@ -905,9 +927,10 @@ class App(tk.Tk):
 
         self._append("")
         self._append("=== Peak weeks (eventi) ===")
-        self._append(f"Regole: {len(peaks.get('rules', []))} | Overrides: {len(peaks.get('date_overrides', []))}")
-        if not peaks.get("rules") and not peaks.get("date_overrides"):
+        self._append(f"Annuali: {len(peaks.get('fixed_annual', []))} | One-off: {len(peaks.get('one_off', []))}")
+        if not peaks.get("fixed_annual") and not peaks.get("one_off"):
             self._append("Nessun peak_weeks.json trovato → nessun uplift eventi.")
+
 
         self._append("")
         self._append("=== Benchmark locale (Airbtics) ===")
@@ -955,7 +978,7 @@ class App(tk.Tk):
             occ = float(month_stats[k]["occ"])
             tgt = target_for_lead(lead)
             mult = float(month_pacing[k])
-    self._append(f"{k}   {occ:>4.0%}   {tgt:>4.0%}   x{mult:.3f}   {lead:>4d}")
+            self._append(f"{k}   {occ:>4.0%}   {tgt:>4.0%}   x{mult:.3f}   {lead:>4d}")
 
         daily = build_daily_matrix(
             start_day=start_day,
