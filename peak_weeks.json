@@ -1,80 +1,295 @@
 {
-  "rules": [
-    { "label": "Capodanno + Epifania (Italia)", "start": "2026-01-01", "end": "2026-01-06", "mult": 1.08 },
-
-    { "label": "Inverno (bassa stagione)", "start": "2026-01-07", "end": "2026-02-05", "mult": 0.92 },
-
-    { "label": "Milano-Cortina 2026 (Olimpiadi)", "start": "2026-02-06", "end": "2026-02-22", "mult": 1.10 },
-
-    { "label": "Fine inverno (bassa)", "start": "2026-02-23", "end": "2026-02-23", "mult": 0.95 },
-
-    { "label": "Milano Fashion Week (AI 2026/27)", "start": "2026-02-24", "end": "2026-03-02", "mult": 1.22 },
-
-    { "label": "Primavera (base)", "start": "2026-03-03", "end": "2026-04-01", "mult": 1.00 },
-
-    { "label": "Vacanze Pasqua (Lombardia) + ponti", "start": "2026-04-02", "end": "2026-04-07", "mult": 1.18 },
-
-    { "label": "Primavera (base)", "start": "2026-04-08", "end": "2026-04-19", "mult": 1.00 },
-
-    { "label": "Salone del Mobile + Fuorisalone (Milano)", "start": "2026-04-20", "end": "2026-04-27", "mult": 1.25 },
-
-    { "label": "Primavera (base)", "start": "2026-04-28", "end": "2026-04-29", "mult": 1.00 },
-
-    { "label": "Ponte 1 Maggio", "start": "2026-04-30", "end": "2026-05-03", "mult": 1.12 },
-
-    { "label": "Tarda primavera (shoulder)", "start": "2026-05-04", "end": "2026-05-28", "mult": 1.02 },
-
-    { "label": "Artigiano in Fiera - Anteprima d’Estate (Fieramilano)", "start": "2026-05-29", "end": "2026-06-02", "mult": 1.18 },
-
-    { "label": "Inizio estate (shoulder)", "start": "2026-06-03", "end": "2026-06-30", "mult": 1.03 },
-
-    { "label": "Estate (picco)", "start": "2026-07-01", "end": "2026-08-31", "mult": 1.15 },
-
-    { "label": "Inizio autunno (base)", "start": "2026-09-01", "end": "2026-09-02", "mult": 1.05 },
-
-    { "label": "F1 Monza (weekend gara + arrivi/partenze)", "start": "2026-09-03", "end": "2026-09-07", "mult": 1.30 },
-
-    { "label": "Autunno (base)", "start": "2026-09-08", "end": "2026-10-29", "mult": 1.06 },
-
-    { "label": "Ponte Ognissanti (weekend lungo)", "start": "2026-10-30", "end": "2026-11-01", "mult": 1.12 },
-
-    { "label": "Autunno (base)", "start": "2026-11-02", "end": "2026-11-03", "mult": 1.05 },
-
-    { "label": "EICMA (Milano Rho-Fiera) + giorni di picco", "start": "2026-11-04", "end": "2026-11-09", "mult": 1.22 },
-
-    { "label": "Pre-Natale (fiere/business/mercatini)", "start": "2026-11-10", "end": "2026-12-04", "mult": 1.06 },
-
-    { "label": "Artigiano in Fiera (Fieramilano)", "start": "2026-12-05", "end": "2026-12-13", "mult": 1.20 },
-
-    { "label": "Pre-Natale (shopping/visite)", "start": "2026-12-14", "end": "2026-12-22", "mult": 1.08 },
-
-    { "label": "Natale + Capodanno + Epifania (vacanze)", "start": "2026-12-23", "end": "2027-01-06", "mult": 1.18 }
+  "years_ahead": 2,
+  "fixed_annual": [
+    {
+      "name": "Natale + Capodanno + Epifania (vacanze)",
+      "start_md": "12-23",
+      "end_md": "01-06",
+      "mult": 1.18
+    },
+    {
+      "name": "Inverno (bassa stagione)",
+      "start_md": "01-07",
+      "end_md": "02-05",
+      "mult": 0.92
+    },
+    {
+      "name": "Fine inverno (base)",
+      "start_md": "02-06",
+      "end_md": "03-02",
+      "mult": 1.0
+    },
+    {
+      "name": "Primavera (base)",
+      "start_md": "03-03",
+      "end_md": "04-29",
+      "mult": 1.0
+    },
+    {
+      "name": "Ponte 1 Maggio",
+      "start_md": "04-30",
+      "end_md": "05-03",
+      "mult": 1.12
+    },
+    {
+      "name": "Tarda primavera (shoulder)",
+      "start_md": "05-04",
+      "end_md": "05-28",
+      "mult": 1.02
+    },
+    {
+      "name": "Artigiano in Fiera - Anteprima d’Estate (finestra indicativa)",
+      "start_md": "05-29",
+      "end_md": "06-02",
+      "mult": 1.18
+    },
+    {
+      "name": "Inizio estate (shoulder)",
+      "start_md": "06-03",
+      "end_md": "06-30",
+      "mult": 1.03
+    },
+    {
+      "name": "Estate (picco)",
+      "start_md": "07-01",
+      "end_md": "08-31",
+      "mult": 1.15
+    },
+    {
+      "name": "Inizio autunno (base)",
+      "start_md": "09-01",
+      "end_md": "09-02",
+      "mult": 1.05
+    },
+    {
+      "name": "Autunno (base)",
+      "start_md": "09-03",
+      "end_md": "10-29",
+      "mult": 1.06
+    },
+    {
+      "name": "Ponte Ognissanti (weekend lungo)",
+      "start_md": "10-30",
+      "end_md": "11-01",
+      "mult": 1.12
+    },
+    {
+      "name": "Autunno (base)",
+      "start_md": "11-02",
+      "end_md": "11-03",
+      "mult": 1.05
+    },
+    {
+      "name": "EICMA (finestra indicativa)",
+      "start_md": "11-04",
+      "end_md": "11-09",
+      "mult": 1.22
+    },
+    {
+      "name": "Pre-Natale (fiere/business/mercatini)",
+      "start_md": "11-10",
+      "end_md": "12-04",
+      "mult": 1.06
+    },
+    {
+      "name": "Artigiano in Fiera (finestra indicativa)",
+      "start_md": "12-05",
+      "end_md": "12-13",
+      "mult": 1.2
+    },
+    {
+      "name": "Pre-Natale (shopping/visite)",
+      "start_md": "12-14",
+      "end_md": "12-22",
+      "mult": 1.08
+    },
+    {
+      "name": "Milano Fashion Week (finestra indicativa)",
+      "start_md": "02-24",
+      "end_md": "03-02",
+      "mult": 1.22
+    },
+    {
+      "name": "Salone del Mobile + Fuorisalone (finestra indicativa)",
+      "start_md": "04-20",
+      "end_md": "04-27",
+      "mult": 1.25
+    },
+    {
+      "name": "F1 Monza (finestra indicativa)",
+      "start_md": "09-03",
+      "end_md": "09-07",
+      "mult": 1.3
+    },
+    {
+      "name": "New Year",
+      "start_md": "01-01",
+      "end_md": "01-01",
+      "mult": 1.2
+    },
+    {
+      "name": "Epifania",
+      "start_md": "01-06",
+      "end_md": "01-06",
+      "mult": 1.12
+    },
+    {
+      "name": "San Zeno (Patrono Olgiate Molgora)",
+      "start_md": "04-12",
+      "end_md": "04-12",
+      "mult": 1.12
+    },
+    {
+      "name": "Festa dei Lavoratori",
+      "start_md": "05-01",
+      "end_md": "05-01",
+      "mult": 1.12
+    },
+    {
+      "name": "Festa della Repubblica",
+      "start_md": "06-02",
+      "end_md": "06-02",
+      "mult": 1.1
+    },
+    {
+      "name": "Ferragosto",
+      "start_md": "08-15",
+      "end_md": "08-15",
+      "mult": 1.25
+    },
+    {
+      "name": "Ognissanti",
+      "start_md": "11-01",
+      "end_md": "11-01",
+      "mult": 1.15
+    },
+    {
+      "name": "Immacolata",
+      "start_md": "12-08",
+      "end_md": "12-08",
+      "mult": 1.12
+    },
+    {
+      "name": "Vigilia di Natale",
+      "start_md": "12-24",
+      "end_md": "12-24",
+      "mult": 1.18
+    },
+    {
+      "name": "Natale",
+      "start_md": "12-25",
+      "end_md": "12-25",
+      "mult": 1.22
+    },
+    {
+      "name": "Santo Stefano",
+      "start_md": "12-26",
+      "end_md": "12-26",
+      "mult": 1.15
+    },
+    {
+      "name": "NYE",
+      "start_md": "12-31",
+      "end_md": "12-31",
+      "mult": 1.3
+    }
   ],
-  "date_overrides": [
-    { "label": "Epifania", "date": "2026-01-06", "mult": 1.12 },
-
-    { "label": "Carnevale (Ambrosiano - weekend)", "date": "2026-02-21", "mult": 1.10 },
-
-    { "label": "Pasqua", "date": "2026-04-05", "mult": 1.22 },
-    { "label": "Pasquetta", "date": "2026-04-06", "mult": 1.18 },
-
-    { "label": "San Zeno (Patrono Olgiate Molgora)", "date": "2026-04-12", "mult": 1.12 },
-
-    { "label": "Festa dei Lavoratori", "date": "2026-05-01", "mult": 1.12 },
-    { "label": "Festa della Repubblica", "date": "2026-06-02", "mult": 1.10 },
-
-    { "label": "Ferragosto", "date": "2026-08-15", "mult": 1.25 },
-
-    { "label": "Ognissanti", "date": "2026-11-01", "mult": 1.15 },
-
-    { "label": "Immacolata", "date": "2026-12-08", "mult": 1.12 },
-
-    { "label": "Vigilia di Natale", "date": "2026-12-24", "mult": 1.18 },
-    { "label": "Natale", "date": "2026-12-25", "mult": 1.22 },
-    { "label": "Santo Stefano", "date": "2026-12-26", "mult": 1.15 },
-
-    { "label": "NYE", "date": "2026-12-31", "mult": 1.30 },
-    { "label": "New Year", "date": "2027-01-01", "mult": 1.20 },
-    { "label": "Epifania", "date": "2027-01-06", "mult": 1.12 }
+  "one_off": [
+    {
+      "name": "Milano-Cortina 2026 (Olimpiadi)",
+      "start": "2026-02-06",
+      "end": "2026-02-22",
+      "mult": 1.1
+    },
+    {
+      "name": "Milano Fashion Week (AI 2026/27)",
+      "start": "2026-02-24",
+      "end": "2026-03-02",
+      "mult": 1.22
+    },
+    {
+      "name": "Salone del Mobile + Fuorisalone (Milano) 2026",
+      "start": "2026-04-20",
+      "end": "2026-04-27",
+      "mult": 1.25
+    },
+    {
+      "name": "F1 Monza (weekend gara + arrivi/partenze) 2026",
+      "start": "2026-09-03",
+      "end": "2026-09-07",
+      "mult": 1.3
+    },
+    {
+      "name": "Vacanze Pasqua (Lombardia) + ponti 2026",
+      "start": "2026-04-02",
+      "end": "2026-04-07",
+      "mult": 1.18
+    },
+    {
+      "name": "Pasqua 2026",
+      "start": "2026-04-05",
+      "end": "2026-04-05",
+      "mult": 1.22
+    },
+    {
+      "name": "Pasquetta 2026",
+      "start": "2026-04-06",
+      "end": "2026-04-06",
+      "mult": 1.18
+    },
+    {
+      "name": "Carnevale (Ambrosiano - weekend) 2026",
+      "start": "2026-02-21",
+      "end": "2026-02-21",
+      "mult": 1.1
+    },
+    {
+      "name": "Vacanze Pasqua (Lombardia) + ponti 2027",
+      "start": "2027-03-25",
+      "end": "2027-03-30",
+      "mult": 1.18
+    },
+    {
+      "name": "Pasqua 2027",
+      "start": "2027-03-28",
+      "end": "2027-03-28",
+      "mult": 1.22
+    },
+    {
+      "name": "Pasquetta 2027",
+      "start": "2027-03-29",
+      "end": "2027-03-29",
+      "mult": 1.18
+    },
+    {
+      "name": "Carnevale (Ambrosiano - weekend) 2027",
+      "start": "2027-02-13",
+      "end": "2027-02-13",
+      "mult": 1.1
+    },
+    {
+      "name": "Vacanze Pasqua (Lombardia) + ponti 2028",
+      "start": "2028-04-13",
+      "end": "2028-04-18",
+      "mult": 1.18
+    },
+    {
+      "name": "Pasqua 2028",
+      "start": "2028-04-16",
+      "end": "2028-04-16",
+      "mult": 1.22
+    },
+    {
+      "name": "Pasquetta 2028",
+      "start": "2028-04-17",
+      "end": "2028-04-17",
+      "mult": 1.18
+    },
+    {
+      "name": "Carnevale (Ambrosiano - weekend) 2028",
+      "start": "2028-03-04",
+      "end": "2028-03-04",
+      "mult": 1.1
+    }
   ]
 }
