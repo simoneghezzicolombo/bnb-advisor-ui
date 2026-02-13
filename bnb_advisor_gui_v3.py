@@ -239,6 +239,94 @@ def count_future_bookings(rows: List[dict], schema: SheetSchema, from_date: date
             c += 1
     return c
 
+def month_key(d: date) -> str:
+    return f"{d.year:04d}-{d.month:02d}"
+
+def month_occ_stats(blocked: set[date], start_day: date, horizon_days: int) -> dict[str, dict]:
+    """
+    Ritorna stats per mese (YYYY-MM) dentro la finestra [start_day, start_day+horizon_days).
+    """
+    stats: dict[str, dict] = {}
+    for i in range(horizon_days):
+        d = start_day + timedelta(days=i)
+        k = month_key(d)
+        if k not in stats:
+            stats[k] = {"booked": 0, "total": 0, "month_start": date(d.year, d.month, 1)}
+        stats[k]["total"] += 1
+        if d in blocked:
+            stats[k]["booked"] += 1
+    for k, v in stats.items():
+        v["occ"] = (v["booked"] / v["total"]) if v["total"] else 0.0
+    return stats
+
+def target_for_lead(days_to_month_start: int) -> float:
+    # target occupazione "sana" in base a quanto manca
+    if days_to_month_start <= 30:
+        return 0.45
+    if days_to_month_start <= 90:
+        return 0.30
+    if days_to_month_start <= 180:
+        return 0.18
+    return 0.10
+
+def k_for_lead(days_to_month_start: int) -> float:
+    # reazione più forte quando il mese è vicino, più dolce quando è lontano
+    if days_to_month_start <= 30:
+        return 0.40
+    if days_to_month_start <= 90:
+        return 0.25
+    if days_to_month_start <= 180:
+        return 0.20
+    return 0.15
+
+def clamp_for_lead(x: float, days_to_month_start: int) -> float:
+    # mesi lontani: clamp più stretto (stabilità)
+    if days_to_month_start > 180:
+        return clamp(x, 0.95, 1.10)
+    return clamp(x, 0.90, 1.20)
+
+def compute_month_pacing_mult(blocked: set[date], start_day: date, horizon_days: int) -> dict[str, float]:
+    """
+    Ritorna un moltiplicatore per mese (YYYY-MM) basato su occupazione del mese e lead time.
+    Include smoothing tra mesi adiacenti (spillover).
+    """
+    stats = month_occ_stats(blocked, start_day, horizon_days)
+    months = sorted(stats.keys())  # YYYY-MM ordina correttamente
+
+    # 1) raw mult per mese
+    raw: dict[str, float] = {}
+    today = date.today()
+    for m in months:
+        occ = float(stats[m]["occ"])
+        lead = (stats[m]["month_start"] - today).days
+        tgt = target_for_lead(lead)
+        k = k_for_lead(lead)
+
+        # graduale: mult = 1 + k*(occ - target)
+        mult = 1.0 + k * (occ - tgt)
+        raw[m] = clamp_for_lead(mult, lead)
+
+    # 2) smoothing tra mesi (spillover: luglio pieno -> agosto sale un po')
+    smoothed: dict[str, float] = {}
+    for idx, m in enumerate(months):
+        prev_m = months[idx - 1] if idx - 1 >= 0 else None
+        next_m = months[idx + 1] if idx + 1 < len(months) else None
+
+        val = 0.60 * raw[m]
+        if prev_m:
+            val += 0.20 * raw[prev_m]
+        else:
+            val += 0.20 * raw[m]
+        if next_m:
+            val += 0.20 * raw[next_m]
+        else:
+            val += 0.20 * raw[m]
+
+        lead = (stats[m]["month_start"] - today).days
+        smoothed[m] = clamp_for_lead(val, lead)
+
+    return smoothed
+
 # -------- persistence
 def load_state_default_base(default_base: float) -> float:
     try:
@@ -429,7 +517,8 @@ def build_daily_matrix(
     booking_has20: bool,
     weekend_uplift: float,
     month_mult: Dict[int, float],
-    peaks: dict
+    peaks: dict,
+    month_pacing_mult: Optional[Dict[str, float]] = None,   # ✅ nuovo
 ) -> list[dict]:
     ab_factor = 0.8 if (face20 and airbnb_has20) else 1.0
     bk_factor = 0.8 if (face20 and booking_has20) else 1.0
@@ -437,13 +526,17 @@ def build_daily_matrix(
     out = []
     for i in range(days):
         d = start_day + timedelta(days=i)
-        mult = float(month_mult.get(d.month, 1.0))
+
+        base_mult = float(month_mult.get(d.month, 1.0))
+        mk = f"{d.year:04d}-{d.month:02d}"
+        pace_mult = float(month_pacing_mult.get(mk, 1.0)) if month_pacing_mult else 1.0
+
         is_wknd = d.weekday() in (4, 5)  # Fri/Sat
         wk = weekend_uplift if is_wknd else 1.0
 
         peak_mult, peak_label = peak_multiplier_for_day(d, peaks)
 
-        direct_2p = direct_base * mult * wk * peak_mult
+        direct_2p = direct_base * base_mult * pace_mult * wk * peak_mult
         ota_eff_2p = direct_2p / (1 - DIRECT_DISCOUNT)
 
         ab_2p = ota_eff_2p / ab_factor
@@ -457,6 +550,8 @@ def build_daily_matrix(
             "date": d.isoformat(),
             "weekday": d.strftime("%a"),
             "is_weekend": int(is_wknd),
+            "month_key": mk,                         # ✅ utile debug
+            "month_pacing_mult": round(pace_mult, 3),# ✅ utile debug
             "peak_mult": round(peak_mult, 3),
             "peak_label": peak_label,
             "direct_2p": round_eur(direct_2p),
@@ -490,10 +585,14 @@ def write_outputs(
 
     with open("matrix_daily.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=[
-            "date","weekday","is_weekend","peak_mult","peak_label",
+            "date","weekday","is_weekend",
+            "month_key","month_pacing_mult",
+            "peak_mult","peak_label",
             "direct_2p","airbnb_2p","booking_2p",
             "direct_7p","airbnb_7p","booking_7p"
-        ])
+        ],
+        extrasaction="ignore"
+        )
         w.writeheader()
         for row in daily:
             w.writerow(row)
@@ -589,7 +688,7 @@ class App(tk.Tk):
         ttk.Checkbutton(frm, text="Auto-adjust (pacing)", variable=self.auto_adjust).grid(row=2, column=4, sticky="w")
 
         ttk.Label(frm, text="Daily horizon (giorni):").grid(row=2, column=5, sticky="w")
-        ttk.Spinbox(frm, from_=14, to=365, textvariable=self.daily_horizon, width=6).grid(row=2, column=6, sticky="w")
+        ttk.Spinbox(frm, from_=14, to=730, textvariable=self.daily_horizon, width=6).grid(row=2, column=6, sticky="w")
 
         ttk.Separator(frm).grid(row=3, column=0, columnspan=9, sticky="we", pady=8)
 
@@ -731,7 +830,7 @@ class App(tk.Tk):
 
         try:
             horizon = int(float(self.daily_horizon.get().strip()))
-            horizon = max(14, min(365, horizon))
+            horizon = max(14, min(730, horizon))
         except Exception:
             horizon = 90
 
@@ -843,6 +942,21 @@ class App(tk.Tk):
         )
         self.last_matrix = matrix
 
+        month_pacing = compute_month_pacing_mult(blocked, start_day, horizon)
+
+        # Debug: mostra come il pacing mensile sta influenzando i mesi
+        month_stats = month_occ_stats(blocked, start_day, horizon)
+
+        self._append("")
+        self._append("=== Month pacing mult (debug) ===")
+        self._append("month    occ   target  mult   lead(days)")
+        for k in sorted(month_pacing.keys())[:24]:  # fino a 24 mesi (~2 anni)
+            lead = (month_stats[k]["month_start"] - date.today()).days
+            occ = float(month_stats[k]["occ"])
+            tgt = target_for_lead(lead)
+            mult = float(month_pacing[k])
+    self._append(f"{k}   {occ:>4.0%}   {tgt:>4.0%}   x{mult:.3f}   {lead:>4d}")
+
         daily = build_daily_matrix(
             start_day=start_day,
             days=horizon,
@@ -852,7 +966,8 @@ class App(tk.Tk):
             booking_has20=bool(self.booking_has20.get()),
             weekend_uplift=weekend_uplift,
             month_mult=month_mult,
-            peaks=peaks
+            peaks=peaks,
+            month_pacing_mult=month_pacing,
         )
         self.last_daily = daily
 
