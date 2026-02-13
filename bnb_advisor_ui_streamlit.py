@@ -387,39 +387,48 @@ with tab_site:
 
 with tab_files:
     st.subheader("Download (senza errori di file aperti)")
+
     # Daily CSV
     daily_csv = df.to_csv(index=False).encode("utf-8")
-    st.download_button("Scarica matrix_daily.csv", data=daily_csv, file_name="matrix_daily.csv", mime="text/csv")
+    st.download_button(
+        "Scarica matrix_daily.csv",
+        data=daily_csv,
+        file_name="matrix_daily.csv",
+        mime="text/csv",
+    )
 
-# --- prices.json (solo Direct) ---
-extra_rules = [
-    {"from": 3, "to": 5, "extra_per_night": 15},
-    {"from": 6, "to": 7, "extra_per_night": 10},
-]
+    # --- prices.json (solo Direct per il sito) ---
+    extra_rules = [
+        {"from": 3, "to": 5, "extra_per_night": 15},
+        {"from": 6, "to": 7, "extra_per_night": 10},
+    ]
 
-# prendi solo le prime N righe = orizzonte scelto (es. 365)
-df_direct = df.head(int(cfg_saved["daily_horizon"])) if cfg_saved else df
+    # Usa l'orizzonte scelto (es. 365). Se cfg_saved non c'è, usa tutto df.
+    horizon_days = int(cfg_saved["daily_horizon"]) if cfg_saved and "daily_horizon" in cfg_saved else len(df)
+    df_direct = df.head(horizon_days)
 
-base_map = {row["date"]: int(row["direct_2p"]) for _, row in df_direct.iterrows()}
+    base_map = {row["date"]: int(row["direct_2p"]) for _, row in df_direct.iterrows()}
 
-payload = {
-    "currency": "EUR",
-    "generated_at": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
-    "horizon_days": len(base_map),
-    "extra_guest_rules": extra_rules,
-    "base_2p": base_map
-}
+    payload = {
+        "currency": "EUR",
+        "generated_at": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+        "horizon_days": len(base_map),
+        "extra_guest_rules": extra_rules,
+        "base_2p": base_map,
+    }
 
-prices_json_bytes = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    prices_json_bytes = json.dumps(
+        payload,
+        ensure_ascii=False,
+        indent=2,                # ✅ indentazione leggibile
+    ).encode("utf-8")
 
-st.download_button(
-    "Scarica prices.json (Direct per il sito)",
-    data=prices_json_bytes,
-    file_name="prices.json",
-    mime="application/json"
-)
-
-
+    st.download_button(
+        "Scarica prices.json (Direct per il sito)",
+        data=prices_json_bytes,
+        file_name="prices.json",
+        mime="application/json",
+    )
     # Airbnb blocks
     ablocks = pd.DataFrame(compress_blocks(daily, "airbnb_2p", round_step=round_step))
     st.download_button("Scarica airbnb_blocks.csv", data=ablocks.to_csv(index=False).encode("utf-8"),
